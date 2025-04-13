@@ -1,0 +1,46 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main  # Normal push should NOT trigger Docker push
+    tags:
+      - 'v*'  # Only build & push Docker images on version tags
+
+  workflow_dispatch:  # Allows manual execution
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history to access tags
+
+    - name: Get Git Tag
+      id: get_tag
+      run: |
+        TAG=$(git describe --tags --abbrev=0)
+        echo "TAG=$TAG" >> $GITHUB_ENV
+        echo "Docker tag will be: $TAG"
+
+    - name: Log in to Docker Hub
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build Docker Image
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        docker build -t harishkumarthesde/content-moderator:$TAG -f Dockerfile .
+        docker tag harishkumarthesde/content-moderator:$TAG harishkumarthesde/content-moderator:latest
+
+    - name: Push Docker Image
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        docker push harishkumarthesde/content-moderator:$TAG
+        docker push harishkumarthesde/content-moderator:latest

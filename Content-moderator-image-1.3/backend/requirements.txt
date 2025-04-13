@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+sentence-transformers
+faiss-cpu
+numpy
+pymupdf
+ollama
+fastapi
+uvicorn
+faiss-cpu
+ollama
+pymupdf
+numpy
+sentence-transformers
+streamlit
+requests
+python-multipart
